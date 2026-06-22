@@ -25,6 +25,7 @@
 #include <fstream>
 #include <time.h>
 #include "MagixNetworkDefines.h"
+#include "psa/crypto.h"
 
 using namespace RakNet;
 using namespace std;
@@ -66,6 +67,13 @@ struct BanInfo
 		IPList.clear();
 	}
 };
+struct PasswordInfo
+{
+	char alg[8];
+	int iter;
+	uint8_t salt[16];
+	uint8_t hash[PSA_HASH_LENGTH(PSA_ALG_PBKDF2_HMAC(PSA_ALG_SHA_512))];
+};
 
 
 class ServerManager
@@ -91,6 +99,10 @@ protected:
 	unsigned short lowPing;
 	unsigned short highPing;
 	vector<BanInfo> banlist;
+
+	bool ctCompare(volatile const char* a, volatile const char* b, size_t len);
+	string hashPassword(const char* pswd, const char* salt = nullptr, int iterations = 0);
+	bool verifyPassword(const char* pswd, const char* hash);
 
 public:
 	ServerManager();

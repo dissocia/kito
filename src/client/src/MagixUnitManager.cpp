@@ -53,9 +53,9 @@ void MagixUnitManager::initialize(SceneManager *sceneMgr, MagixExternalDefinitio
 	mCritterManager = critterMgr;
 	mCamera = camera;
 	mRayQuery = sceneMgr->createRayQuery(Ray());
-	mNameTagAttr = new MovableTextOverlayAttributes("Attrs1", sceneMgr->getCamera("PlayerCam"), "Tahoma", 16, ColourValue::White, "GUIMat/ButtonUp");
-	mChatBubbleAttr = new MovableTextOverlayAttributes("Attrs2", sceneMgr->getCamera("PlayerCam"), "Tahoma", 16, ColourValue(1, 0.6, 0), "GUIMat/StatsBlockCenter");
-	mUserTagAttr = new MovableTextOverlayAttributes("Attrs3", sceneMgr->getCamera("PlayerCam"), "Tahoma", 14, ColourValue(1, 0.6, 0), "GUIMat/ButtonUp");
+	mNameTagAttr = new MovableTextOverlayAttributes("Attrs1", sceneMgr->getCamera("PlayerCam"), DEFAULT_FONT, 16, ColourValue::White, "GUIMat/ButtonUp");
+	mChatBubbleAttr = new MovableTextOverlayAttributes("Attrs2", sceneMgr->getCamera("PlayerCam"), DEFAULT_FONT, 16, ColourValue(1, 0.6, 0), "GUIMat/StatsBlockCenter");
+	mUserTagAttr = new MovableTextOverlayAttributes("Attrs3", sceneMgr->getCamera("PlayerCam"), DEFAULT_FONT, 14, ColourValue(1, 0.6, 0), "GUIMat/ButtonUp");
 }
 void MagixUnitManager::reset(bool destroyPlayer, bool resetPosition)
 {
@@ -1360,9 +1360,9 @@ void MagixUnitManager::deleteCritter(const unsigned short &iID)
 	if (mPlayerTarget == critter)setPlayerTarget(0);
 	mCritterManager->deleteCritter(iID);
 }
-const vector<const std::pair<String, Vector2>>::type MagixUnitManager::popItemDropQueue()
+const vector<std::pair<String, Vector2>>::type MagixUnitManager::popItemDropQueue()
 {
-	const vector<const std::pair<String, Vector2>>::type tList = itemDropQueue;
+	const vector<std::pair<String, Vector2>>::type tList = itemDropQueue;
 	itemDropQueue.clear();
 	return tList;
 }
@@ -1384,7 +1384,7 @@ void MagixUnitManager::rewardCritter(MagixCritter *critter)
 {
 	if (!critter)return;
 	//Item drops
-	const vector<const std::pair<String, Real>>::type tDropList = mDef->getCritterDropList(critter->getCritterType());
+	const vector<std::pair<String, Real>>::type tDropList = mDef->getCritterDropList(critter->getCritterType());
 	for (int j = 0; j<(int)tDropList.size(); j++)
 		if (Math::UnitRandom()<tDropList[j].second)
 		{
@@ -1422,7 +1422,7 @@ void MagixUnitManager::addPartyMember(const OwnerToken &token, const String &nam
 }
 bool MagixUnitManager::removePartyMember(const String &name)
 {
-	for (vector<const std::pair<OwnerToken, String>>::type::iterator it = partyMembers.begin(); it != partyMembers.end(); it++)
+	for (vector<std::pair<OwnerToken, String>>::type::iterator it = partyMembers.begin(); it != partyMembers.end(); it++)
 	{
 		const std::pair<OwnerToken, String> tMember = *it;
 		if (tMember.second == name)
@@ -1443,7 +1443,7 @@ bool MagixUnitManager::isPartyFull()
 {
 	return (partyMembers.size() >= MAX_PARTYMEMBERS);
 }
-const vector<const std::pair<OwnerToken, String>>::type MagixUnitManager::getPartyMembers()
+const vector<std::pair<OwnerToken, String>>::type MagixUnitManager::getPartyMembers()
 {
 	return partyMembers;
 }
@@ -1480,9 +1480,9 @@ const std::pair<OwnerToken, String> MagixUnitManager::getPartyMember(const Owner
 		if (partyMembers[i].first == token)return partyMembers[i];
 	return std::pair<OwnerToken, String>(0, "");
 }
-const vector<const HitInfo>::type MagixUnitManager::popHitQueue()
+const vector<HitInfo>::type MagixUnitManager::popHitQueue()
 {
-	const vector<const HitInfo>::type tList = hitQueue;
+	const vector<HitInfo>::type tList = hitQueue;
 	hitQueue.clear();
 	return tList;
 }

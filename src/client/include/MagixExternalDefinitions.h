@@ -8,7 +8,7 @@
 //using namespace std;
 using namespace Ogre;
 
-typedef vector<const std::pair<String,String>>::type CampaignEvent;
+typedef vector<std::pair<String,String>>::type CampaignEvent;
 typedef vector<CampaignEvent>::type CampaignEventList;
 
 #define MAX_HOTKEYF 8
@@ -117,13 +117,13 @@ struct Critter
 	bool invulnerable;
 	bool isDrawPoint;
 	bool isUncustomizable;
-	vector<const std::pair<String,Real>>::type dropList;
+	vector<std::pair<String,Real>>::type dropList;
 	std::pair<String,unsigned char> skillDrop;
 	Real maxSpeed;
 	unsigned char decisionMin;
 	unsigned char decisionDeviation;
 	Real scale;
-	vector<const CritterAttack>::type attackList;
+	vector<CritterAttack>::type attackList;
 	String sound;
 	String material;
 	Critter()
@@ -168,6 +168,13 @@ class MagixExternalDefinitions
 protected:
 	String lastBioName;
 	String hotkeyF[MAX_HOTKEYF];
+	size_t keySize;
+	std::unique_ptr<unsigned char[]> chaChaKey = nullptr;
+	size_t nonceSize;
+	std::unique_ptr<unsigned char[]> chaChaNonce = nullptr;
+
+	void initChaCha();
+	void chaChaDecrypt(unsigned char* dest, const unsigned char* src, size_t size);
 public:
 	bool isAdmin;
 	bool isMod;
@@ -205,8 +212,8 @@ public:
 	vector<String>::type itemParticle;
 	vector<String>::type itemParticleOffset;
 	vector<bool>::type itemParticleOnNode;
-	vector<const Attack>::type attackList;
-	vector<const Critter>::type critterList;
+	vector<Attack>::type attackList;
+	vector<Critter>::type critterList;
 
 	MagixExternalDefinitions()
 	{
@@ -259,7 +266,7 @@ public:
 
 	const bool loadBanFile(unsigned short &numDays);
 
-	vector<const String>::type XORInternal(const String inFile, bool preChecksum = false);
+	vector<String>::type XORInternal(const String inFile, bool preChecksum = false);
 
 	const String XOR7(const String &input, unsigned long *checksum = 0, bool preChecksum = false);
 
@@ -273,7 +280,7 @@ public:
 
 	bool loadCampaign(const String &name, CampaignEventList &data, String &fileName, bool customCampaigns = false);
 
-	void loadCampaignScript(const String &filename, const vector<const String>::type &nextEvent, CampaignEventList &data, const unsigned short &eventCount = 0, bool loadFirstSection = false);
+	void loadCampaignScript(const String &filename, const vector<String>::type &nextEvent, CampaignEventList &data, const unsigned short &eventCount = 0, bool loadFirstSection = false);
 
 	bool loadCredits(const String &filename, vector<String>::type &credits);
 
@@ -347,7 +354,7 @@ public:
 
 	bool hasTailMark(const unsigned char &id);
 
-	void loadWeatherCycle(const String &type, vector<const WeatherEvent>::type &list, bool isCustom = false);
+	void loadWeatherCycle(const String &type, vector<WeatherEvent>::type &list, bool isCustom = false);
 
 	void loadWeather(const String &type, String &particle, Vector3 &offset, String &sound, bool isCustom = false);
 
@@ -365,7 +372,7 @@ public:
 
 	const Critter getCritter(const String &type);
 
-	const vector<const std::pair<String, Real>>::type getCritterDropList(const String &type);
+	const vector<std::pair<String, Real>>::type getCritterDropList(const String &type);
 
 	const std::pair<String, unsigned char> getCritterSkillDrop(const String &type);
 
@@ -379,13 +386,13 @@ public:
 
 	bool loadCritterSpawnList(const String &worldName,
 		unsigned short &limit,
-		vector<const WorldCritter>::type &list,
-		vector<const std::pair<Vector3, Vector3>>::type &roamArea,
+		vector<WorldCritter>::type &list,
+		vector<std::pair<Vector3, Vector3>>::type &roamArea,
 		const String &customFilename = "");
 
-	bool loadCritterSpawnListFile(const String &filename, const String &worldName, unsigned short &limit, vector<const WorldCritter>::type &list, vector<const std::pair<Vector3, Vector3>>::type &roamArea);
+	bool loadCritterSpawnListFile(const String &filename, const String &worldName, unsigned short &limit, vector<WorldCritter>::type &list, vector<std::pair<Vector3, Vector3>>::type &roamArea);
 
-	bool loadCustomCritterSpawnList(const String &filename, unsigned short &limit, vector<const WorldCritter>::type &list, vector<const std::pair<Vector3, Vector3>>::type &roamArea);
+	bool loadCustomCritterSpawnList(const String &filename, unsigned short &limit, vector<WorldCritter>::type &list, vector<std::pair<Vector3, Vector3>>::type &roamArea);
 
 	const String loadLocalIP(const String &filename);
 

@@ -120,8 +120,9 @@ struct Portal
 	bool collides(const AxisAlignedBox &target)
 	{
 		if(!mEnt || dest=="")return false;
-		if(mEnt->getWorldBoundingSphere().intersects(target))return true; // getWorldBoundingSphere doesn't work properly
-		return false;
+
+		//getWorldBoundingSphere doesn't work correctly, we'll use a bounding box instead :)
+		return mEnt->getWorldBoundingBox().intersects(target);
 	}
 	void disable()
 	{
@@ -147,8 +148,9 @@ struct Gate
 	bool collides(const AxisAlignedBox &target)
 	{
 		if(!mEnt || dest=="")return false;
-		if(mEnt->getWorldBoundingSphere().intersects(target))return true; // getWorldBoundingSphere doesn't work properly
-		return false;
+		
+		//getWorldBoundingSphere doesn't work correctly, we'll use a bounding box instead :)
+		return mEnt->getWorldBoundingBox().intersects(target);
 	}
 	void disable()
 	{
@@ -282,7 +284,7 @@ public:
 
 	Portal* getPortalHit(const AxisAlignedBox &target);
 
-	void getPortalMap(vector<const std::pair<Vector2, String>>::type &map);
+	void getPortalMap(vector<std::pair<Vector2, String>>::type &map);
 
 	void createWaterBox(const Vector3 &center, const Real &scaleX, const Real &scaleZ, bool isSolid = false);
 
@@ -300,7 +302,7 @@ public:
 
 	Gate* getGateHit(const AxisAlignedBox &target);
 
-	void getGateMap(vector<const std::pair<Vector2, String>>::type &map);
+	void getGateMap(vector<std::pair<Vector2, String>>::type &map);
 
 	void createCollBox(const Vector3 &center, const Vector3 &range);
 

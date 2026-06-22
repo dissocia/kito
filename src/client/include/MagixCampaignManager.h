@@ -20,8 +20,8 @@ struct ScriptedUnit
 	MagixUnit *chaseUnit;
 	Real timer;
 	CampaignEventList eventList;
-	vector<const String>::type nextEvent;
-	vector<vector<const String>::type>::type eventConditionList;
+	vector<String>::type nextEvent;
+	vector<vector<String>::type>::type eventConditionList;
 	ScriptedUnit()
 	{
 		mUnit = 0;
@@ -62,8 +62,8 @@ protected:
 	vector<Skill>::type skillsCheckpoint;
 	String campaignFilename;
 	CampaignEventList eventList;
-	vector<const String>::type nextEvent;
-	vector<vector<const String>::type>::type eventConditionList;
+	vector<String>::type nextEvent;
+	vector<vector<String>::type>::type eventConditionList;
 	bool ignoreGameOver;
 public:
 	MagixCampaignManager()
