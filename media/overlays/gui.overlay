@@ -19,7 +19,7 @@ template container BorderPanel(GUITemplate/BasicBorderPanel)
 }
 template element TextArea(GUITemplate/BasicText)
 {
-    font_name TempusSans
+    font_name Quattrocento
     char_height 0.05
     colour_top 1 1 0
     colour_bottom 1 0.2 0.2
@@ -30,7 +30,7 @@ template element TextArea(GUITemplate/BasicText)
 }
 template element TextArea(GUITemplate/CenteredText)
 {
-    font_name TahomaBold
+    font_name Roboto-Bold
     char_height 0.03
     colour_top 1 1 0
     colour_bottom 1 0.2 0.2
@@ -849,7 +849,7 @@ GUIOverlay/StartScreen
 
 			element TextArea(GUI/StartScreenButtonText2) : GUITemplate/CenteredText
 			{
-				font_name TahomaBold
+				font_name Roboto-Bold
 				caption Multiplayer
 			}
         	}
@@ -875,7 +875,7 @@ GUIOverlay/StartScreen
 
 			element TextArea(GUI/UpdateBoxText) : GUITemplate/BasicText
 			{
-				font_name Tahoma
+				font_name Roboto
     				char_height 0.03
 				left 0.008
    				top 0.008
@@ -907,7 +907,7 @@ GUIOverlay/LogonScreen
 		}
 		element TextArea(GUI/LogonUsernameText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.25
@@ -917,7 +917,7 @@ GUIOverlay/LogonScreen
 		}
 		element TextArea(GUI/LogonPasswordText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.30
@@ -1001,7 +1001,7 @@ GUIOverlay/CreateAccountScreen
 		}
 		element TextArea(GUI/CreateAccountText1) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.20
@@ -1011,7 +1011,7 @@ GUIOverlay/CreateAccountScreen
 		}
 		element TextArea(GUI/CreateAccountText2) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.25
@@ -1021,7 +1021,7 @@ GUIOverlay/CreateAccountScreen
 		}
 		element TextArea(GUI/CreateAccountText3) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.30
@@ -1031,7 +1031,7 @@ GUIOverlay/CreateAccountScreen
 		}
 		element TextArea(GUI/CreateAccountText4) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.35
@@ -1041,7 +1041,7 @@ GUIOverlay/CreateAccountScreen
 		}
 		element TextArea(GUI/CreateAccountText5) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.40
@@ -1051,7 +1051,7 @@ GUIOverlay/CreateAccountScreen
 		}
 		element TextArea(GUI/CreateAccountText6) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.50
@@ -1106,7 +1106,7 @@ GUIOverlay/EditAccountScreen
 		}
 		element TextArea(GUI/EditAccountText1) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.20
@@ -1116,7 +1116,7 @@ GUIOverlay/EditAccountScreen
 		}
 		element TextArea(GUI/EditAccountText2) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.25
@@ -1126,7 +1126,7 @@ GUIOverlay/EditAccountScreen
 		}
 		element TextArea(GUI/EditAccountText3) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.35
@@ -1136,7 +1136,7 @@ GUIOverlay/EditAccountScreen
 		}
 		element TextArea(GUI/EditAccountText4) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.05
    			top 0.4
@@ -1521,7 +1521,7 @@ GUIOverlay/Chat
 
 		element TextArea(GUI/TextInputBoxText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.028
 			left 0.008
    			top 0.008
@@ -1574,7 +1574,7 @@ GUIOverlay/Chat
 
 		element TextArea(GUI/TextOutputBoxText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.026
 			left 0.008
    			top 0.008
@@ -1776,7 +1776,7 @@ GUIOverlay/MiniMap2
 	}
 	container TextArea(GUI/MiniMapTag) : GUITemplate/BasicText
 	{
-		font_name Tahoma
+		font_name Roboto
     		char_height 0.03
 		alignment right
 	}
@@ -1922,7 +1922,7 @@ GUIOverlay/EmoteBox
 
 		element TextArea(GUI/EmoteBoxText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.026
 			left 0.008
    			top 0.008
@@ -1978,7 +1978,7 @@ GUIOverlay/ItemBox
 
 		element TextArea(GUI/ItemBoxText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.026
 			left 0.008
    			top 0.008
@@ -2032,7 +2032,7 @@ GUIOverlay/FriendBox
 
 		element TextArea(GUI/FriendBoxText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.026
 			left 0.008
    			top 0.008
@@ -2094,7 +2094,7 @@ GUIOverlay/BioBox
 		}
 		element TextArea(GUI/BioBoxText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.026
 			left 0.008
    			top 0.06
@@ -2159,7 +2159,7 @@ GUIOverlay/TargetBioBox
 		}
 		element TextArea(GUI/TargetBioBoxText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.026
 			left 0.008
    			top 0.06
@@ -2277,7 +2277,7 @@ GUIOverlay/HomeBox
         	}
 		element TextArea(GUI/DimensionText1) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.017
    			top 0.15
@@ -2287,7 +2287,7 @@ GUIOverlay/HomeBox
 		}
 		element TextArea(GUI/DimensionText2) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.035
 			left 0.02
    			top 0.2
@@ -2321,7 +2321,7 @@ GUIOverlay/PartyBox
 
 		element TextArea(GUI/PartyBoxText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.026
 			left 0.008
    			top 0.008
@@ -2363,7 +2363,7 @@ GUIOverlay/PartyBox
         	}
 		element TextArea(GUI/PartyBoxText2) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.026
 			left 0.008
    			top 0.23
@@ -2406,7 +2406,7 @@ GUIOverlay/StashBox
 
 		element TextArea(GUI/StashBoxText) : GUITemplate/BasicText
 		{
-			font_name Tahoma
+			font_name Roboto
     			char_height 0.026
 			left 0.008
    			top 0.008

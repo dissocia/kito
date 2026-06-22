@@ -65,4 +65,12 @@
 #define MAIN_SERVER_IP "127.0.0.1" // enter your server address
 #define SERVER_PASSWORD "KITO1.7.4" // enter a key
 
+// Fonts
+#define DEFAULT_FONT "Roboto"
+
+// Encryption
+#define CHACHA_KEY "I1pGZspf/GHUc4UimoamhJpLt1oPKwirvuT7HzAX3h4="
+#define CHACHA_NONCE "p0mlZ7ior1AuCz//"
+#define PBKDF2_ITERATIONS 1000
+
 #endif

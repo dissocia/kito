@@ -125,7 +125,7 @@ void MagixEncryptionZip::unload()
     }
 }
 //-----------------------------------------------------------------------
-Ogre::DataStreamPtr MagixEncryptionZip::open(const Ogre::String& filename, bool readOnly) const
+Ogre::DataStreamPtr MagixEncryptionZip::open(const Ogre::String& filename, bool readOnly)
 {
 	// zziplib is not threadsafe
 	OGRE_LOCK_AUTO_MUTEX;
@@ -225,7 +225,7 @@ Ogre::StringVectorPtr MagixEncryptionZip::find(const Ogre::String& pattern, bool
 }
 //-----------------------------------------------------------------------
 Ogre::FileInfoListPtr MagixEncryptionZip::findFileInfo(const Ogre::String& pattern,
-    bool recursive, bool dirs) const
+    bool recursive, bool dirs)
 {
 	OGRE_LOCK_AUTO_MUTEX;
     Ogre::FileInfoListPtr ret = Ogre::FileInfoListPtr(OGRE_NEW_T(Ogre::FileInfoList, Ogre::MEMCATEGORY_GENERAL)(), Ogre::SPFM_DELETE_T);

@@ -215,7 +215,7 @@ void MagixCollisionManager::createPortal(const Vector3 &center, const Real &rang
 	if (!mSceneMgr)return;
 
 	Portal tPortal;
-	tPortal.mEnt = mSceneMgr->createEntity("PortalSphere" + StringConverter::toString(portal.size() + 1), "CollSphere");
+	tPortal.mEnt = mSceneMgr->createEntity("PortalSphere" + StringConverter::toString(portal.size() + 1), "portal.mesh");
 	tPortal.mNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	tPortal.mNode->attachObject(tPortal.mEnt);
 	//tPortal.mNode->setInheritScale(false);
@@ -271,7 +271,7 @@ Portal* MagixCollisionManager::getPortalHit(const AxisAlignedBox &target)
 	}
 	return 0;
 }
-void MagixCollisionManager::getPortalMap(vector<const std::pair<Vector2, String>>::type &map)
+void MagixCollisionManager::getPortalMap(vector<std::pair<Vector2, String>>::type &map)
 {
 	map.clear();
 	list<Portal>::type::iterator it = portal.begin();
@@ -323,7 +323,7 @@ void MagixCollisionManager::createGate(const Vector3 &center, String destName, c
 	if (!mSceneMgr)return;
 
 	Gate tGate;
-	tGate.mEnt = mSceneMgr->createEntity("GateSphere" + StringConverter::toString(gate.size() + 1), "CollSphere");
+	tGate.mEnt = mSceneMgr->createEntity("GateSphere" + StringConverter::toString(gate.size() + 1), "portal.mesh");
 	tGate.mNode = mSceneMgr->getRootSceneNode()->createChildSceneNode();
 	tGate.mNode->attachObject(tGate.mEnt);
 	//tGate.mNode->setInheritScale(false);
@@ -377,7 +377,7 @@ Gate* MagixCollisionManager::getGateHit(const AxisAlignedBox &target)
 	}
 	return 0;
 }
-void MagixCollisionManager::getGateMap(vector<const std::pair<Vector2, String>>::type &map)
+void MagixCollisionManager::getGateMap(vector<std::pair<Vector2, String>>::type &map)
 {
 	map.clear();
 	list<Gate>::type::iterator it = gate.begin();

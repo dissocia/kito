@@ -1,7 +1,104 @@
 #include "MagixExternalDefinitions.h"
+#include "mbedtls/base64.h"
+#include "psa/crypto.h"
 
+void MagixExternalDefinitions::initChaCha()
+{
+	// Get length of ChaCha key
+	size_t encodedLen = strlen(CHACHA_KEY);
+	size_t decodedLen = 0;
+	int res = mbedtls_base64_decode(nullptr, 0, &decodedLen, (const unsigned char*)CHACHA_KEY, encodedLen);
+
+	if (res != MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL)
+	{
+		throw(Exception(9, "MbedTLS Error", "Failed to get length of ChaCha key."));
+	}
+
+	// Decode ChaCha key
+	chaChaKey = std::make_unique<unsigned char[]>(decodedLen);
+	res = mbedtls_base64_decode(chaChaKey.get(), decodedLen, &decodedLen, (const unsigned char*)CHACHA_KEY, encodedLen);
+
+	if (res)
+	{
+		throw(Exception(9, "MbedTLS Error", "Failed to decode ChaCha key."));
+	}
+
+	keySize = decodedLen;
+
+	// Get length of ChaCha nonce
+	encodedLen = strlen(CHACHA_NONCE);
+	decodedLen = 0;
+	res = mbedtls_base64_decode(nullptr, 0, &decodedLen, (const unsigned char*)CHACHA_NONCE, encodedLen);
+
+	if (res != MBEDTLS_ERR_BASE64_BUFFER_TOO_SMALL)
+	{
+		throw(Exception(9, "MbedTLS Error", "Failed to get length of ChaCha nonce."));
+	}
+
+	// Decode ChaCha nonce
+	chaChaNonce = std::make_unique<unsigned char[]>(decodedLen);
+	res = mbedtls_base64_decode(chaChaNonce.get(), decodedLen, &decodedLen, (const unsigned char*)CHACHA_NONCE, encodedLen);
+
+	if (res)
+	{
+		throw(Exception(9, "MbedTLS Error", "Failed to decode ChaCha nonce."));
+	}
+
+	nonceSize = decodedLen;
+}
+void MagixExternalDefinitions::chaChaDecrypt(unsigned char* dest, const unsigned char* src, size_t size)
+{
+	// Init crypto
+	int res = psa_crypto_init();
+
+	if (res)
+	{
+		throw(Exception(9, "MbedTLS Error", "Failed to initialize cryptography."));
+	}
+
+	// Init attribs
+	psa_key_id_t keyId = 0;
+	psa_key_attributes_t keyAttribs = PSA_KEY_ATTRIBUTES_INIT;
+	psa_set_key_type(&keyAttribs, PSA_KEY_TYPE_CHACHA20);
+	psa_set_key_bits(&keyAttribs, keySize * 8);
+	psa_set_key_usage_flags(&keyAttribs, PSA_KEY_USAGE_DECRYPT);
+	psa_set_key_algorithm(&keyAttribs, PSA_ALG_CHACHA20_POLY1305);
+	res = psa_import_key(&keyAttribs, chaChaKey.get(), keySize, &keyId);
+
+	if (res)
+	{
+		throw(Exception(9, "MbedTLS Error", "Failed to import ChaCha key."));
+	}
+
+	// Decrypt the data
+	res = psa_aead_decrypt(
+		keyId,
+		PSA_ALG_CHACHA20_POLY1305,
+		chaChaNonce.get(),
+		nonceSize,
+		nullptr,
+		0,
+		src,
+		size,
+		dest,
+		size,
+		&size
+	);
+
+	// Cleanup
+	psa_destroy_key(keyId);
+	psa_reset_key_attributes(&keyAttribs);
+
+	// Check status code
+	if (res)
+	{
+		std::cout << "MbedTLS Error: " << res << std::endl;
+		throw(Exception(9, "MbedTLS Error", "Failed to decrypt data."));
+	}
+}
 void MagixExternalDefinitions::initialize()
 {
+	initChaCha();
 	loadUnitMeshes("UnitMeshes.cfg");
 	loadUnitEmotes("UnitEmotes.cfg");
 	loadItems((ENCRYPTED_ITEMS) ? "Items.dat" : "Items.cfg", ENCRYPTED_ITEMS);
@@ -12,9 +109,6 @@ void MagixExternalDefinitions::initialize()
 	critterList.clear();
 	loadCritters("cd1.dat", false);
 	loadCritters("CustomCritters.cfg", true);
-	if (!XOR7FileGen("cd2.dat", "cd2.cfg", true, true))
-		throw(Exception(9, "Corrupted Data File", "cd2.dat, please run the autopatcher."));
-	else _unlink("cd2.cfg");
 }
 void MagixExternalDefinitions::initializeCapabilities(const RenderSystemCapabilities *capabilities)
 {
@@ -390,10 +484,10 @@ const bool MagixExternalDefinitions::loadBanFile(unsigned short &numDays)
 	}
 	return true;
 }
-vector<const String>::type MagixExternalDefinitions::XORInternal(const String inFile, bool preChecksum)
+vector<String>::type MagixExternalDefinitions::XORInternal(const String inFile, bool preChecksum)
 {
 	String line = "", prevline;
-	vector<const String>::type tBuffer;
+	vector<String>::type tBuffer;
 	unsigned long tChecksum = 0;
 	DataStreamPtr stream = Root::getSingleton().openFileStream(inFile);
 
@@ -440,7 +534,7 @@ const String MagixExternalDefinitions::XOR7(const String &input, unsigned long *
 }
 bool MagixExternalDefinitions::XOR7FileGen(const String &infile, const String &outfile, bool decrypt, bool checksum)
 {
-	vector<const String>::type tBuffer;
+	vector<String>::type tBuffer;
 	unsigned long tChecksum = 0;
 	std::ifstream inFile;
 	inFile.open(infile.c_str(), (decrypt ? std::ios_base::binary : std::ifstream::in));
@@ -607,7 +701,7 @@ bool MagixExternalDefinitions::loadCampaign(const String &name, CampaignEventLis
 			if (tName == name)
 			{
 				fileName = tLine[1];
-				const vector<const String>::type tEvent;
+				const vector<String>::type tEvent;
 				loadCampaignScript(tLine[1], tEvent, data, 0, true);
 				return true;
 			}
@@ -615,7 +709,7 @@ bool MagixExternalDefinitions::loadCampaign(const String &name, CampaignEventLis
 	}
 	return (customCampaigns ? false : loadCampaign(name, data, fileName, true));
 }
-void MagixExternalDefinitions::loadCampaignScript(const String &filename, const vector<const String>::type &nextEvent, CampaignEventList &data, const unsigned short &eventCount, bool loadFirstSection)
+void MagixExternalDefinitions::loadCampaignScript(const String &filename, const vector<String>::type &nextEvent, CampaignEventList &data, const unsigned short &eventCount, bool loadFirstSection)
 {
 	unsigned int tSize = 0;
 	char *tBuffer;
@@ -1029,7 +1123,7 @@ void MagixExternalDefinitions::loadItems(const String &filename, const bool decr
 
 	if (decrypt)
 	{
-		vector<const String>::type stream = XORInternal(filename);
+		vector<String>::type stream = XORInternal(filename);
 		String line;
 		for (int i = 0; i < (int)stream.size(); i++)
 		{
@@ -1337,7 +1431,7 @@ const String tBuffer2 = "#";
 outFile.write(tBuffer2.c_str(),(int)tBuffer2.length());
 outFile.close();
 }*/
-void MagixExternalDefinitions::loadWeatherCycle(const String &type, vector<const WeatherEvent>::type &list, bool isCustom)
+void MagixExternalDefinitions::loadWeatherCycle(const String &type, vector<WeatherEvent>::type &list, bool isCustom)
 {
 	String tFilename = "";
 	list.clear();
@@ -1444,21 +1538,50 @@ void MagixExternalDefinitions::loadWeather(const String &type, String &particle,
 void MagixExternalDefinitions::loadAttacks(const String &filename, bool isCustom)
 {
 	String tFilename = filename;
+	ConfigFile cf;
+
 	if (isCustom)
 	{
+		// Load unencrypted config file
 		std::ifstream inFile(filename.c_str());
-		if (!inFile.good())return;
-		else inFile.close();
+
+		if (!inFile.good())
+		{
+			return;
+		}
+		else
+		{
+			inFile.close();
+		}
+
+		cf.load(tFilename);
 	}
-	//Genereate temp file
 	else
 	{
-		tFilename = filename + ".cfg";
-		if (!XOR7FileGen(filename, tFilename, true, true))
-			throw(Exception(9, "Corrupted Data File", filename + ", please run the autopatcher."));
+		// Get size of encrypted config file
+		std::ifstream inFile(filename.c_str(), std::ios::binary | std::ios::ate);
+
+		if (!inFile.is_open())
+		{
+			std::cout << "Failed to get size of '" << filename << "'!" << std::endl;
+			return;
+		}
+
+		const std::streampos fileSize = inFile.tellg();
+
+		// Load file contents
+		inFile.seekg(static_cast<std::streampos>(0));
+		const std::unique_ptr<char[]> encryptedData = std::make_unique<char[]>(fileSize);
+		inFile.read(encryptedData.get(), fileSize);
+
+		// Decrypt data
+		const std::unique_ptr<char[]> decryptedData = std::make_unique<char[]>(static_cast<int>(fileSize) + 1);
+		chaChaDecrypt(reinterpret_cast<unsigned char*>(decryptedData.get()), reinterpret_cast<unsigned char*>(encryptedData.get()), fileSize);
+
+		// Load attack data into config file object
+		Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(decryptedData.get(), fileSize));
+		cf.load(stream);
 	}
-	ConfigFile cf;
-	cf.load(tFilename);
 	ConfigFile::SectionIterator seci = cf.getSectionIterator();
 
 	while (seci.hasMoreElements())
@@ -1504,11 +1627,6 @@ void MagixExternalDefinitions::loadAttacks(const String &filename, bool isCustom
 			attackList.push_back(tAtk);
 		}
 	}
-	//Delete temp file
-	if (!isCustom)
-	{
-		_unlink(tFilename.c_str());
-	}
 }
 const Attack MagixExternalDefinitions::getAttack(const String &name)
 {
@@ -1545,21 +1663,50 @@ bool MagixExternalDefinitions::isSkillTargetsSelf(const String &name)
 void MagixExternalDefinitions::loadCritters(const String &filename, bool isCustom)
 {
 	String tFilename = filename;
+	ConfigFile cf;
+
 	if (isCustom)
 	{
+		// Load unencrypted config file
 		std::ifstream inFile(filename.c_str());
-		if (!inFile.good())return;
-		else inFile.close();
+
+		if (!inFile.good())
+		{
+			return;
+		}
+		else
+		{
+			inFile.close();
+		}
+
+		cf.load(tFilename);
 	}
-	//Genereate temp file
 	else
 	{
-		tFilename = filename + ".cfg";
-		if (!XOR7FileGen(filename, tFilename, true, true))
-			throw(Exception(9, "Corrupted Data File", filename + ", please run the autopatcher."));
+		// Get size of encrypted config file
+		std::ifstream inFile(filename.c_str(), std::ios::binary | std::ios::ate);
+
+		if (!inFile.is_open())
+		{
+			std::cout << "Failed to get size of '" << filename << "'!" << std::endl;
+			return;
+		}
+
+		const std::streampos fileSize = inFile.tellg();
+
+		// Load file contents
+		inFile.seekg(static_cast<std::streampos>(0));
+		const std::unique_ptr<char[]> encryptedData = std::make_unique<char[]>(fileSize);
+		inFile.read(encryptedData.get(), fileSize);
+
+		// Decrypt data
+		const std::unique_ptr<char[]> decryptedData = std::make_unique<char[]>(static_cast<int>(fileSize) + 1);
+		chaChaDecrypt(reinterpret_cast<unsigned char*>(decryptedData.get()), reinterpret_cast<unsigned char*>(encryptedData.get()), fileSize);
+
+		// Load attack data into config file object
+		Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(decryptedData.get(), fileSize));
+		cf.load(stream);
 	}
-	ConfigFile cf;
-	cf.load(tFilename);
 	ConfigFile::SectionIterator seci = cf.getSectionIterator();
 
 	while (seci.hasMoreElements())
@@ -1615,12 +1762,6 @@ void MagixExternalDefinitions::loadCritters(const String &filename, bool isCusto
 			critterList.push_back(tC);
 		}
 	}
-
-	//Delete temp file
-	if (!isCustom)
-	{
-		_unlink(tFilename.c_str());
-	}
 }
 const Critter MagixExternalDefinitions::getCritter(const String &type)
 {
@@ -1630,13 +1771,13 @@ const Critter MagixExternalDefinitions::getCritter(const String &type)
 	}
 	return Critter();
 }
-const vector<const std::pair<String, Real>>::type MagixExternalDefinitions::getCritterDropList(const String &type)
+const vector<std::pair<String, Real>>::type MagixExternalDefinitions::getCritterDropList(const String &type)
 {
 	for (int i = 0; i<(int)critterList.size(); i++)
 	{
 		if (critterList[i].type == type)return critterList[i].dropList;
 	}
-	const vector<const std::pair<String, Real>>::type tList;
+	const vector<std::pair<String, Real>>::type tList;
 	return tList;
 }
 const std::pair<String, unsigned char> MagixExternalDefinitions::getCritterSkillDrop(const String &type)
@@ -1692,7 +1833,7 @@ const unsigned char MagixExternalDefinitions::getCritterRandomSpecificAttack(con
 	{
 		if (critterList[i].type == type)
 		{
-			vector<const unsigned char>::type tList;
+			vector<unsigned char>::type tList;
 			for (int j = 0; j<(int)critterList[i].attackList.size(); j++)
 				if (getNonHeal^critterList[i].attackList[j].hitAlly)tList.push_back(j + 1);
 			if (tList.size() == 0)return 0;
@@ -1719,8 +1860,8 @@ const std::pair<CritterAttack, String> MagixExternalDefinitions::getCritterAttac
 }
 bool MagixExternalDefinitions::loadCritterSpawnList(const String &worldName,
 	unsigned short &limit,
-	vector<const WorldCritter>::type &list,
-	vector<const std::pair<Vector3, Vector3>>::type &roamArea,
+	vector<WorldCritter>::type &list,
+	vector<std::pair<Vector3, Vector3>>::type &roamArea,
 	const String &customFilename)
 {
 	//Hardcoded goodness
@@ -1736,12 +1877,34 @@ bool MagixExternalDefinitions::loadCritterSpawnList(const String &worldName,
 	if (loadCustomCritterSpawnList("media/terrains/" + worldName + "/" + customFilename, limit, list, roamArea))return true;
 	return false;
 }
-bool MagixExternalDefinitions::loadCritterSpawnListFile(const String &filename, const String &worldName, unsigned short &limit, vector<const WorldCritter>::type &list, vector<const std::pair<Vector3, Vector3>>::type &roamArea)
+bool MagixExternalDefinitions::loadCritterSpawnListFile(const String &filename, const String &worldName, unsigned short &limit, vector<WorldCritter>::type &list, vector<std::pair<Vector3, Vector3>>::type &roamArea)
 {
-	const String tFilename = filename + ".cfg";
-	if (!XOR7FileGen(filename, tFilename, true, true))return false;
+	String tFilename = filename;
 	ConfigFile cf;
-	cf.load(tFilename);
+
+	// Get size of encrypted config file
+	std::ifstream inFile(filename.c_str(), std::ios::binary | std::ios::ate);
+
+	if (!inFile.is_open())
+	{
+		std::cout << "Failed to get size of '" << filename << "'!" << std::endl;
+		return false;
+	}
+
+	const std::streampos fileSize = inFile.tellg();
+
+	// Load file contents
+	inFile.seekg(static_cast<std::streampos>(0));
+	const std::unique_ptr<char[]> encryptedData = std::make_unique<char[]>(fileSize);
+	inFile.read(encryptedData.get(), fileSize);
+
+	// Decrypt data
+	const std::unique_ptr<char[]> decryptedData = std::make_unique<char[]>(static_cast<int>(fileSize) + 1);
+	chaChaDecrypt(reinterpret_cast<unsigned char*>(decryptedData.get()), reinterpret_cast<unsigned char*>(encryptedData.get()), fileSize);
+
+	// Load attack data into config file object
+	Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream(decryptedData.get(), fileSize));
+	cf.load(stream);
 	ConfigFile::SectionIterator seci = cf.getSectionIterator();
 
 	while (seci.hasMoreElements())
@@ -1773,17 +1936,12 @@ bool MagixExternalDefinitions::loadCritterSpawnListFile(const String &filename, 
 						));
 				}
 			}
-			//Delete temp file
-			_unlink(tFilename.c_str());
 			return true;
 		}
 	}
-
-	//Delete temp file
-	_unlink(tFilename.c_str());
 	return false;
 }
-bool MagixExternalDefinitions::loadCustomCritterSpawnList(const String &filename, unsigned short &limit, vector<const WorldCritter>::type &list, vector<const std::pair<Vector3, Vector3>>::type &roamArea)
+bool MagixExternalDefinitions::loadCustomCritterSpawnList(const String &filename, unsigned short &limit, vector<WorldCritter>::type &list, vector<std::pair<Vector3, Vector3>>::type &roamArea)
 {
 	unsigned int tSize = 0;
 	char *tBuffer;

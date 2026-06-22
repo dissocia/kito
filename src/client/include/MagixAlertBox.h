@@ -4,7 +4,7 @@ using namespace Ogre;
 
 
 #define TRANSITION_TIME 0.1
-#define ALERT_FONT "TempusSans"
+#define ALERT_FONT "Quattrocento"
 
 class MagixAlertBox
 {

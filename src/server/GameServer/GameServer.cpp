@@ -1,6 +1,7 @@
 #include "GameServer.h"
 #include "MagixNetworkDefines.h"
-#include "RakNetworkFactory.h"
+// #include "RakNetworkFactory.h"  // obsolete
+#include "RakPeer.h"
 #include <thread>
 
 using namespace RakNet;
@@ -56,7 +57,7 @@ string intToString(int number)
 
 ServerManager::ServerManager()
 {
-	server = RakNetworkFactory::GetRakPeerInterface();
+	server = new RakNet::RakPeer();
 	server->SetIncomingPassword(SERVER_PASSWORD, (int)strlen(SERVER_PASSWORD));
 
 	for(int i=0;i<MAX_CLIENTS;i++)
@@ -98,6 +99,7 @@ ServerManager::ServerManager()
 }
 ServerManager::~ServerManager()
 {
+	delete server;
 }
 void ServerManager::startThread()
 {
@@ -119,7 +121,8 @@ bool ServerManager::initialize(const unsigned int &sleepTime)
 	if(sleepTime>0)RakSleep(sleepTime);
 	if(!hideText)puts("Starting server");
 	SocketDescriptor socketDescriptor(SERVER_PORT,0);
-	if (!server->Startup(MAX_CLIENTS, 30, &socketDescriptor, 1))
+	server->Startup(MAX_CLIENTS, &socketDescriptor, 1, 30);  // for some reason the first call always fails :(
+	if (!server->Startup(MAX_CLIENTS, &socketDescriptor, 1, 30))
 	{
 		if (!hideText)puts("Server failed to start.  Terminating.");
 		return false;
@@ -280,7 +283,7 @@ void ServerManager::runLoop()
 					{
 						if(!hideText)printf("Failed to connect to %s with packet ID %i\n",p->systemAddress.ToString(),(int)packetIdentifier);
 						if(isServerAdd(p->systemAddress))
-							server->Connect(p->systemAddress.ToString(false), p->systemAddress.port, SERVER_PASSWORD, (int)strlen(SERVER_PASSWORD));
+							server->Connect(p->systemAddress.ToString(false), p->systemAddress.GetPort(), SERVER_PASSWORD, (int)strlen(SERVER_PASSWORD));
 					}
 					break;
 				case ID_INVALID_PASSWORD:
@@ -439,7 +442,7 @@ void ServerManager::runLoop()
 							if(tServerList[i].first>=0 && tServerList[i].first<MAX_SERVERS)
 							{
 								serverAdd[tServerList[i].first] = tServerList[i].second;
-								server->Connect(tServerList[i].second.ToString(false), tServerList[i].second.port, SERVER_PASSWORD, (int)strlen(SERVER_PASSWORD));
+								server->Connect(tServerList[i].second.ToString(false), tServerList[i].second.GetPort(), SERVER_PASSWORD, (int)strlen(SERVER_PASSWORD));
 							}
 						}
 						tServerList.clear();

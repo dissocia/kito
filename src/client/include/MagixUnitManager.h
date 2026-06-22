@@ -69,13 +69,13 @@ protected:
 	bool playerTargetChanged;
 	bool shouldNameTagsBeVisible;
 	MapChangeData mapChange;
-	vector<const std::pair<String,Vector2>>::type itemDropQueue;
+	vector<std::pair<String,Vector2>>::type itemDropQueue;
 	String pickupText;
 	bool playerHasNewAttack;
-	vector<const std::pair<OwnerToken,String>>::type partyMembers;
+	vector<std::pair<OwnerToken,String>>::type partyMembers;
 	bool partyChanged;
 	OwnerToken partyInviter;
-	vector<const HitInfo>::type hitQueue;
+	vector<HitInfo>::type hitQueue;
 	TameData tameFlag;
 
 public:
@@ -144,7 +144,7 @@ public:
 	MagixCritter* createCritter(const unsigned short &iID, const unsigned char &worldID, const Vector3 &position, const short &owner = -1);
 	MagixCritter* createCritter(const unsigned short &iID, const String &type, const Vector3 &position, const short &owner = -1);
 	void deleteCritter(const unsigned short &iID);
-	const vector<const std::pair<String, Vector2>>::type popItemDropQueue();
+	const vector<std::pair<String, Vector2>>::type popItemDropQueue();
 	const String popPickupText();
 	void killAndRewardCritter(MagixCritter *critter, bool imTheKiller = true);
 	void rewardCritter(MagixCritter *critter);
@@ -153,14 +153,14 @@ public:
 	bool removePartyMember(const String &name);
 	void clearPartyMembers();
 	bool isPartyFull();
-	const vector<const std::pair<OwnerToken, String>>::type getPartyMembers();
+	const vector<std::pair<OwnerToken, String>>::type getPartyMembers();
 	bool isPartyMember(MagixUnit *unit);
 	bool popPartyChanged();
 	bool hasParty();
 	void setPartyInviter(const OwnerToken &token);
 	const OwnerToken getPartyInviter();
 	const std::pair<OwnerToken, String> getPartyMember(const OwnerToken &token);
-	const vector<const HitInfo>::type popHitQueue();
+	const vector<HitInfo>::type popHitQueue();
 	void pushHitQueue(const HitInfo &info);
 	const TameData popTameFlag();
 };

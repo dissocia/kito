@@ -1,6 +1,10 @@
 #include "MagixNetworkManager.h"
 #include "MagixConst.h"
-#include "RakNetworkFactory.h"
+// #include "RakNetworkFactory.h"  // obsolete
+#include "RakPeer.h"
+#include "StringCompressor.h"
+
+RakNet::StringCompressor* stringCompressor = new RakNet::StringCompressor();
 
 MagixNetworkManager::MagixNetworkManager()
 {
@@ -39,7 +43,7 @@ MagixNetworkManager::~MagixNetworkManager()
 	if (mPeer)
 	{
 		if (mPeer->IsActive())disconnect();
-		RakNetworkFactory::DestroyRakPeerInterface(mPeer);
+		delete mPeer;
 	}
 }
 void MagixNetworkManager::initialize(MagixExternalDefinitions *def, MagixGameStateManager *gamestateMgr, MagixItemManager *itemMgr, MagixCritterManager *critterMgr, MagixUnitManager *unitMgr, MagixWorld *world, MagixSkyManager *skyMgr, MagixChatManager *chatMgr, MagixAlertBox *alertBox, MagixCharScreenManager *charscreenMgr)
@@ -54,7 +58,7 @@ void MagixNetworkManager::initialize(MagixExternalDefinitions *def, MagixGameSta
 	mChatManager = chatMgr;
 	mAlertBox = alertBox;
 	mCharScreenManager = charscreenMgr;
-	mPeer = RakNetworkFactory::GetRakPeerInterface();
+	mPeer = new RakNet::RakPeer();
 }
 bool MagixNetworkManager::connect()
 {
@@ -66,7 +70,7 @@ bool MagixNetworkManager::connect()
 		return false;
 	}
 
-	mPeer->Startup(1, 30, &SocketDescriptor(), 1);
+	mPeer->Startup(1, &SocketDescriptor(), 1, 30);
 
 	const String tLocalIP = mDef->loadLocalIP("localIP.txt");
 	if (tLocalIP != "")
@@ -78,7 +82,7 @@ bool MagixNetworkManager::connect()
 	{
 		unsigned char tServerID = (unsigned char)Math::RangeRandom(0, (Real)serverAdd.size());
 		if (tServerID >= (int)serverAdd.size())tServerID = (int)serverAdd.size() - 1;
-		mPeer->Connect(serverAdd[tServerID].second.ToString(false), serverAdd[tServerID].second.port, SERVER_PASSWORD, (int)strlen(SERVER_PASSWORD));
+		mPeer->Connect(serverAdd[tServerID].second.ToString(false), serverAdd[tServerID].second.GetPort(), SERVER_PASSWORD, (int)strlen(SERVER_PASSWORD));
 		mChatManager->message("Connecting to Server " + StringConverter::toString(serverAdd[tServerID].first + 1));
 	}
 	mPeer->SetUnreliableTimeout(30);
@@ -100,7 +104,7 @@ void MagixNetworkManager::connectMainServer()
 		return;
 	}
 	serverAdd.clear();
-	mPeer->Startup(1, 30, &SocketDescriptor(), 1);
+	mPeer->Startup(1, &SocketDescriptor(), 1, 30);
 	const String tLocalIP = mDef->loadLocalIP("localIP.txt");
 	if (tLocalIP != "")
 	{
@@ -237,7 +241,7 @@ void MagixNetworkManager::update(const FrameEvent evt)
 			{
 				//Remove disconnected server from server list
 				unsigned char tServerID = MAX_SERVERS;
-				for (vector<const std::pair<unsigned char, SystemAddress>>::type::iterator it = serverAdd.begin(); it != serverAdd.end(); it++)
+				for (vector<std::pair<unsigned char, SystemAddress>>::type::iterator it = serverAdd.begin(); it != serverAdd.end(); it++)
 				{
 					const std::pair<unsigned char, SystemAddress> tServer = *it;
 					if (tServer.second == packet->systemAddress)
@@ -269,7 +273,7 @@ void MagixNetworkManager::update(const FrameEvent evt)
 			{
 				//Remove disconnected server from server list
 				unsigned char tServerID = MAX_SERVERS;
-				for (vector<const std::pair<unsigned char, SystemAddress>>::type::iterator it = serverAdd.begin(); it != serverAdd.end(); it++)
+				for (vector<std::pair<unsigned char, SystemAddress>>::type::iterator it = serverAdd.begin(); it != serverAdd.end(); it++)
 				{
 					const std::pair<unsigned char, SystemAddress> tServer = *it;
 					if (tServer.second == packet->systemAddress)
@@ -367,17 +371,17 @@ const MessageID MagixNetworkManager::getPacketIdentifier(Packet *p)
 	else
 		return (unsigned char)p->data[0];
 }
-const vector<const String>::type MagixNetworkManager::getPlayersOnline()
+const vector<String>::type MagixNetworkManager::getPlayersOnline()
 {
-	vector<const String>::type tList;
-	vector<const String>::type tMapList;
-	vector<const unsigned short>::type tCountList;
+	vector<String>::type tList;
+	vector<String>::type tMapList;
+	vector<unsigned short>::type tCountList;
 	tList.clear();
 	tMapList.clear();
 	tCountList.clear();
 
 	//Count players in each map
-	for (vector<const PlayerData>::type::iterator it = playerList.begin(); it != playerList.end(); it++)
+	for (vector<PlayerData>::type::iterator it = playerList.begin(); it != playerList.end(); it++)
 	{
 		const PlayerData *tData = &*it;
 		bool tHasMap = false;
@@ -414,7 +418,7 @@ const vector<const String>::type MagixNetworkManager::getPlayersOnline()
 bool MagixNetworkManager::isPlayerOnline(String name)
 {
 	StringUtil::toLowerCase(name);
-	for (vector<const PlayerData>::type::iterator it = playerList.begin(); it != playerList.end(); it++)
+	for (vector<PlayerData>::type::iterator it = playerList.begin(); it != playerList.end(); it++)
 	{
 		const PlayerData *tData = &*it;
 		String tName = tData->name;
@@ -426,7 +430,7 @@ bool MagixNetworkManager::isPlayerOnline(String name)
 const String MagixNetworkManager::getPlayerMap(String name)
 {
 	StringUtil::toLowerCase(name);
-	for (vector<const PlayerData>::type::iterator it = playerList.begin(); it != playerList.end(); it++)
+	for (vector<PlayerData>::type::iterator it = playerList.begin(); it != playerList.end(); it++)
 	{
 		const PlayerData *tData = &*it;
 		String tName = tData->name;
@@ -650,7 +654,7 @@ void MagixNetworkManager::processNewPlayer(Packet *p)
 	if (tBadData)mChatManager->message("Error notice:" + tAddName + "has sent erroneous data.");
 
 	//Process early position packets
-	for (vector<const std::pair<OwnerToken, PositionInfo>>::type::iterator it = playerPositionQueue.begin(); it != playerPositionQueue.end(); it++)
+	for (vector<std::pair<OwnerToken, PositionInfo>>::type::iterator it = playerPositionQueue.begin(); it != playerPositionQueue.end(); it++)
 	{
 		const std::pair<OwnerToken, PositionInfo> tPos = *it;
 		if (tPos.first == tToken)
@@ -1389,7 +1393,7 @@ void MagixNetworkManager::processPlayerData(Packet *p)
 		char tMapName[32];
 		stringCompressor->DecodeString(tMapName, 32, &tBitStream);
 
-		for (vector<const PlayerData>::type::iterator it = playerList.begin(); it != playerList.end(); it++)
+		for (vector<PlayerData>::type::iterator it = playerList.begin(); it != playerList.end(); it++)
 		{
 			PlayerData *tData = &*it;
 			if (tData->name == tName)
@@ -1403,7 +1407,7 @@ void MagixNetworkManager::processPlayerData(Packet *p)
 	}
 	else
 	{
-		for (vector<const PlayerData>::type::iterator it = playerList.begin(); it != playerList.end(); it++)
+		for (vector<PlayerData>::type::iterator it = playerList.begin(); it != playerList.end(); it++)
 		{
 			PlayerData *tData = &*it;
 			if (tData->name == tName)
@@ -2139,7 +2143,7 @@ void MagixNetworkManager::sendPartyAccepted(const OwnerToken &target)
 	tBitStream.Write(MessageID(ID_INFO));
 	tBitStream.Write(unsigned char(INFO_PARTYACCEPTED));
 	tBitStream.Write(target);
-	const vector<const std::pair<OwnerToken, String>>::type tParty = mUnitManager->getPartyMembers();
+	const vector<std::pair<OwnerToken, String>>::type tParty = mUnitManager->getPartyMembers();
 	for (int i = 0; i<(int)tParty.size(); i++)
 	{
 		tBitStream.Write(true);
@@ -2166,7 +2170,7 @@ void MagixNetworkManager::sendPartyJoined(const OwnerToken &target, bool request
 }
 void MagixNetworkManager::sendPartyLeave()
 {
-	const vector<const std::pair<OwnerToken, String>>::type tParty = mUnitManager->getPartyMembers();
+	const vector<std::pair<OwnerToken, String>>::type tParty = mUnitManager->getPartyMembers();
 	for (int i = 0; i<(int)tParty.size(); i++)sendInfo(INFO_PARTYLEAVE, tParty[i].first);
 	mUnitManager->clearPartyMembers();
 	mChatManager->message("You have left the party.");
@@ -3191,7 +3195,7 @@ void MagixNetworkManager::processServerConnected(Packet *p)
 	}
 	else
 	{
-		for (vector<const std::pair<unsigned char, SystemAddress>>::type::iterator it = serverAdd.begin(); it != serverAdd.end(); it++)
+		for (vector<std::pair<unsigned char, SystemAddress>>::type::iterator it = serverAdd.begin(); it != serverAdd.end(); it++)
 		{
 			const std::pair<unsigned char, SystemAddress> tServer = *it;
 			if (tServer.second == tAdd)
