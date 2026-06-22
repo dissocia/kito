@@ -7,14 +7,14 @@ Instructions
 ---------------------
 
 ### Requirement
-Install Visual Studio 2013 Community Edition
-http://go.microsoft.com/fwlink/?LinkId=517284
+Install Visual Studio 2026 Community Edition
+[https://visualstudio.microsoft.com/downloads/#visual-studio-community-2026](https://visualstudio.microsoft.com/downloads/#visual-studio-community-2026)
 
 ### Source instructions
 1. Click the ZIP button
 2. Unzip the package
 3. Open Solution.sln by double clicking it.
- 1. if a dialog appears to select a program, select Visual Studio C++ 2013
+ 1. if a dialog appears to select a program, select Visual Studio 2026
 4. Find GameConfig.h in the files overview
  1. If you cant find it, then open it in the Config folder of the kito folder.
 5. Modify it to your needs
