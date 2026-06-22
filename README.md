@@ -1,7 +1,7 @@
 KITO's Impressive Title source
 ====================
 This is a copy of http://www.kitopen.com/t532-download-and-instructions-compile-your-own-it
-The source will be hosted here on github https://github.com/jespersh/KITO just in case.
+The source will be hosted here on github [https://github.com/kitogit/kito](https://github.com/kitogit/kito) just in case.
 
 Instructions
 ---------------------
